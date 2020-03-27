@@ -1,0 +1,43 @@
+version: "3.7"
+
+services:
+
+  postgres:
+    image: postgres:12.2
+
+    restart: always
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_PASSWORD: password
+
+    volumes:
+      - ../workspace/postgres:/var/lib/postgresql
+
+    ports:
+      - 14032:5432
+
+    container_name: wb-postgres
+
+  php:
+
+    build:
+      context: ./
+      dockerfile: assets/docker/php/Dockerfile
+
+    ports:
+      - 14080:80
+
+    volumes:
+      - .:/var/www
+
+    links:
+      - postgres
+
+    tty: true
+
+    depends_on:
+      - postgres
+
+    command: ["/tmp/wait-for-it.sh", "postgres:5432", "-t", "90", "--", "/tmp/run.sh"]
+
+    container_name: wb-php
