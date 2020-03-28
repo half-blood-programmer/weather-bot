@@ -24,6 +24,7 @@
 use Cake\Http\Middleware\CsrfProtectionMiddleware;
 use Cake\Routing\Route\DashedRoute;
 use Cake\Routing\RouteBuilder;
+use Cake\Routing\Router;
 
 /*
  * The default class to use for all routes
@@ -42,7 +43,7 @@ use Cake\Routing\RouteBuilder;
  * inconsistently cased URLs when used with `:plugin`, `:controller` and
  * `:action` markers.
  */
-/** @var \Cake\Routing\RouteBuilder $routes */
+/** @var RouteBuilder $routes */
 $routes->setRouteClass(DashedRoute::class);
 
 $routes->scope('/', function (RouteBuilder $builder) {
@@ -96,3 +97,20 @@ $routes->scope('/', function (RouteBuilder $builder) {
  * });
  * ```
  */
+
+Router::prefix('api', function (RouteBuilder $routes) {
+
+    $routes->setExtensions(['json']);
+
+    $routes->resources('Webhook', [
+        'id' => '[a-z0-9-_]+',
+        'map' => [
+            'hook' => [
+                'action' => 'hook',
+                'method' => 'POST'
+            ],
+        ]
+    ]);
+
+    $routes->fallbacks(DashedRoute::class);
+});

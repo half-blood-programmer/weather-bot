@@ -397,4 +397,18 @@ return [
     'Session' => [
         'defaults' => 'php',
     ],
+    /**
+     * To manually set webhook call thin in the browser with vpn
+     *
+     * https://api.telegram.org/bot1133073265:AAGlTgxuMGJZxdv_294uBCXJBQeAyKKmMfo/setWebhook?url=https://8af0b879.ngrok.io/api/webhook/hook.json
+     * https://api.telegram.org/bot1130216149:AAEYAORzMG7P3EtsgeMwFpuTmvy82SXKJiQ/setWebhook?url=https://8af0b879.ngrok.io/api/webhook/hook.json
+     */
+    'Bot' => [
+        'username' => 'weather_is_bot',
+        'api_key' => '1130216149:AAEYAORzMG7P3EtsgeMwFpuTmvy82SXKJiQ',
+        'hook_url' => 'https://8af0b879.ngrok.io/api/webhook/hook.json'
+    ],
+    'OpenWeather' => [
+        'api_key' => '61c25599612581cc5252751ab0fc4313'
+    ]
 ];
