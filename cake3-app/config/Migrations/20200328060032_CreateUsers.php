@@ -30,7 +30,7 @@ class CreateUsers extends AbstractMigration
         ]);
         $table->addColumn('username', 'text', [
             'default' => null,
-            'null' => false,
+            'null' => true,
         ]);
         $table->addColumn('language_code', 'string', [
             'default' => null,

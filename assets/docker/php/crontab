@@ -1,2 +1,3 @@
 # m h  dom mon dow   command
+  */11    *     *     *     *    cd /var/www/cake3-app && /usr/bin/flock -n /tmp/users_execute.lock bin/cake users execute --verbose >> /var/log/users-execute.log
 

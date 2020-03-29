@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\Http\ServerRequest;
+use Cake\I18n\Time;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -61,7 +63,7 @@ class UsersTable extends Table
         $validator
             ->scalar('username')
             ->requirePresence('username', 'create')
-            ->notEmptyString('username');
+            ->allowEmptyString('username');
 
         $validator
             ->scalar('language_code')
@@ -108,8 +110,35 @@ class UsersTable extends Table
      */
     public function buildRules(RulesChecker $rules): RulesChecker
     {
-        $rules->add($rules->isUnique(['username']));
+        $rules->add($rules->isUnique(['user_id']));
 
         return $rules;
+    }
+
+    /**
+     * @param $request
+     * @return \App\Model\Entity\User|array|\Cake\Datasource\EntityInterface|null
+     */
+    public function getOrCreateUser(ServerRequest $request)
+    {
+        $user = $this->find()
+            ->where(['user_id' => $request->getData('message.from.id')])
+            ->first();
+
+        if (!$user) {
+            $user = $this->newEntity([
+                'created' => Time::now()->timestamp,
+                'available' => true,
+                'first_name' => $request->getData('message.from.first_name'),
+                'username' => $request->getData('message.from.username'),
+                'language_code' => $request->getData('message.from.language_code'),
+                'is_bot' => $request->getData('message.from.is_bot'),
+                'user_id' => $request->getData('message.from.id'),
+                'chat_id' => $request->getData('message.chat.id'),
+            ]);
+            $this->saveOrFail($user);
+        }
+
+        return $user;
     }
 }

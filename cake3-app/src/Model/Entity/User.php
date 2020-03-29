@@ -12,7 +12,7 @@ use Cake\ORM\Entity;
  * @property int $created
  * @property bool $available
  * @property string $first_name
- * @property string $username
+ * @property string|null $username
  * @property string $language_code
  * @property bool $is_bot
  * @property int $user_id
