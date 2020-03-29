@@ -31,8 +31,8 @@ class ConsoleCommand extends Command
     /**
      * Start the Command and interactive console.
      *
-     * @param \Cake\Console\Arguments $args The command arguments.
-     * @param \Cake\Console\ConsoleIo $io The console io
+     * @param Arguments $args The command arguments.
+     * @param ConsoleIo $io The console io
      * @return int|null|void The exit code or null for success
      */
     public function execute(Arguments $args, ConsoleIo $io)
@@ -67,8 +67,8 @@ class ConsoleCommand extends Command
     /**
      * Display help for this console.
      *
-     * @param \Cake\Console\ConsoleOptionParser $parser The parser to update
-     * @return \Cake\Console\ConsoleOptionParser
+     * @param ConsoleOptionParser $parser The parser to update
+     * @return ConsoleOptionParser
      */
     public function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
     {

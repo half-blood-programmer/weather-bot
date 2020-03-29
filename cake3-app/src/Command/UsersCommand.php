@@ -46,19 +46,17 @@ class UsersCommand extends Command
      * @return null|void|int The exit code or null for success
      * @throws OpenWeatherMap\Exception
      */
-    public function execute(Arguments $args, ConsoleIo $io)
+    public function updateWeather(Arguments $args, ConsoleIo $io)
     {
-        $users = $this->Users->find()->where([
-            'OR' => [
-                ['last_updated IS' => null],
-                ['last_updated <' => Time::now()->timestamp]
-            ]
-        ]);
-
+        $owm = new Weather(Configure::read('OpenWeather.api_key'));
         $bot = new BotApi(Configure::read('Bot.api_key'));
         $bot->setProxy('socks5://v3_279932456:yYvsvPT1@s5.priv.opennetwork.cc:1080');
 
-        $owm = new Weather(Configure::read('OpenWeather.api_key'));
+        $users = $this->Users->find()->where([
+            'available IS' => true,
+            'city_id IS NOT' => null,
+            'last_updated_weather <' => Time::now()->subMinutes(30)->timestamp
+        ]);
 
         /** @var User $user */
         foreach ($users as $user) {
@@ -66,12 +64,50 @@ class UsersCommand extends Command
             $message = $owm->getWeatherMessage($user->city_id, $user->language_code);
 
             try {
-                $bot->editMessageText($user->chat_id, $user->message_id, $message);
+                $bot->editMessageText($user->chat_id, $user->weather_message_id, $message);
             }
             catch (\Exception $e) {
                 continue;
             }
-            $user->last_updated = Time::now()->timestamp;
+
+            $user->last_updated_weather = Time::now()->timestamp;
+            $this->Users->saveOrFail($user);
+        }
+    }
+
+    /**
+     * Implement this method with your command's logic.
+     *
+     * @param Arguments $args The command arguments.
+     * @param ConsoleIo $io The console io
+     * @return null|void|int The exit code or null for success
+     * @throws OpenWeatherMap\Exception
+     */
+    public function updateForecast(Arguments $args, ConsoleIo $io)
+    {
+        $owm = new Weather(Configure::read('OpenWeather.api_key'));
+        $bot = new BotApi(Configure::read('Bot.api_key'));
+        $bot->setProxy('socks5://v3_279932456:yYvsvPT1@s5.priv.opennetwork.cc:1080');
+
+        $users = $this->Users->find()->where([
+            'available IS' => true,
+            'city_id IS NOT' => null,
+            'last_updated_forecast <' => Time::now()->subHours(12)->timestamp
+        ]);
+
+        /** @var User $user */
+        foreach ($users as $user) {
+
+            $message = $owm->getForecastMessage($user->city_id, $user->language_code);
+
+            try {
+                $bot->editMessageText($user->chat_id, $user->forecast_message_id, $message);
+            }
+            catch (\Exception $e) {
+                continue;
+            }
+
+            $user->last_updated_forecast = Time::now()->timestamp;
             $this->Users->saveOrFail($user);
         }
     }

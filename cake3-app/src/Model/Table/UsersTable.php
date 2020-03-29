@@ -62,7 +62,6 @@ class UsersTable extends Table
 
         $validator
             ->scalar('username')
-            ->requirePresence('username', 'create')
             ->allowEmptyString('username');
 
         $validator
@@ -91,12 +90,20 @@ class UsersTable extends Table
             ->allowEmptyString('city_id');
 
         $validator
-            ->integer('message_id')
-            ->allowEmptyString('message_id');
+            ->integer('weather_message_id')
+            ->allowEmptyString('weather_message_id');
 
         $validator
-            ->integer('last_updated')
-            ->allowEmptyString('last_updated');
+            ->integer('forecast_message_id')
+            ->allowEmptyString('forecast_message_id');
+
+        $validator
+            ->integer('last_updated_weather')
+            ->allowEmptyString('last_updated_weather');
+
+        $validator
+            ->integer('last_updated_forecast')
+            ->allowEmptyString('last_updated_forecast');
 
         return $validator;
     }
