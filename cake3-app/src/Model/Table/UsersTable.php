@@ -98,6 +98,10 @@ class UsersTable extends Table
             ->allowEmptyString('forecast_message_id');
 
         $validator
+            ->integer('weather_updated_message_id')
+            ->allowEmptyString('weather_updated_message_id');
+
+        $validator
             ->integer('last_updated_weather')
             ->allowEmptyString('last_updated_weather');
 

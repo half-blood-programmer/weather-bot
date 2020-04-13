@@ -101,6 +101,13 @@ return [
             'url' => env('CACHE_DEFAULT_URL', null),
         ],
 
+        'weatherData' => [
+            'className' => FileEngine::class,
+            'duration' => '+1 hours',
+            'path' => CACHE,
+            'prefix' => 'cake_short_'
+        ],
+
         /*
          * Configure the cache used for general framework caching.
          * Translation cache files are stored with this configuration.
@@ -400,7 +407,6 @@ return [
     /**
      * To manually set webhook call thin in the browser with vpn
      *
-     * https://api.telegram.org/bot1133073265:AAGlTgxuMGJZxdv_294uBCXJBQeAyKKmMfo/setWebhook?url=https://8af0b879.ngrok.io/api/webhook/hook.json
      * https://api.telegram.org/bot1130216149:AAEYAORzMG7P3EtsgeMwFpuTmvy82SXKJiQ/setWebhook?url=https://8af0b879.ngrok.io/api/webhook/hook.json
      */
     'Bot' => [

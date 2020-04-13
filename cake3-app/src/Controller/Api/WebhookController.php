@@ -7,14 +7,13 @@ use App\Model\Entity\User;
 use App\Utility\Weather;
 use Cake\Core\Configure;
 use Cake\I18n\Time;
-use Cake\ORM\TableRegistry;
-use Cake\Utility\Text;
 use TelegramBot\Api\BotApi;
 
 /**
  * Users Controller
  *
  * @property \App\Model\Table\UsersTable $Users
+ * @property \App\Model\Table\CitiesTable $Cities
  *
  * @method User[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
@@ -22,6 +21,13 @@ class WebhookController extends AppController
 {
 
     public $modelClass = 'Users';
+
+    public function initialize(): void
+    {
+        parent::initialize();
+
+        $this->loadModel('Cities');
+    }
 
     /**
      * @throws \Throwable
@@ -40,15 +46,7 @@ class WebhookController extends AppController
                 return;
             }
 
-            $Cities = TableRegistry::getTableLocator()->get('Cities');
-            $city = $Cities->find()->where([
-                'OR' => [
-                    ['name' => $this->request->getData('message.text')],
-                    ['name' => Text::transliterate($this->request->getData('message.text'))],
-                    ['name' => Text::transliterate($this->request->getData('message.text'), 'Russian-Latin/BGN')]
-                ]
-            ])
-                ->first();
+            $city = $this->Cities->getCity($this->request);
 
             if (empty($city)) {
                 $bot->sendMessage($user->chat_id, 'City not found, try again');
@@ -56,22 +54,27 @@ class WebhookController extends AppController
                 return;
             }
 
-            $bot->sendMessage($user->chat_id, $city->name);
-            $user->city_id = $city->city_id;
-
             $owm = new Weather(Configure::read('OpenWeather.api_key'));
-            $forecastMessage = $owm->getForecastMessage($user->city_id, $user->language_code);
-            $weatherMessage = $owm->getWeatherMessage($user->city_id, $user->language_code);
+            $forecast = $owm->_getForecast($city->city_id, $user->language_code);
 
-            $forecastMessage = $bot->sendMessage($user->chat_id, $forecastMessage);
-            $message = $bot->sendMessage($user->chat_id, $weatherMessage);
+            $weatherUpdatedText = $owm->getWeatherUpdatedMessage($forecast);
+            $weatherUpdatedMessage = $bot->sendMessage($user->chat_id, $weatherUpdatedText);
 
-            $user->forecast_message_id = $forecastMessage->getMessageId();
-            $user->weather_message_id = $message->getMessageId();
+            $dailyForecastText = $owm->getDailyForecastMessage($forecast);
+            $dailyForecastMessage = $bot->sendMessage($user->chat_id, $dailyForecastText);
 
-            $user->last_updated_forecast = Time::now()->timestamp;
-            $user->last_updated_weather = Time::now()->timestamp;
+            $currentWeatherText = $owm->getCurrentWeatherMessage($forecast);
+            $currentWeatherMessage = $bot->sendMessage($user->chat_id, $currentWeatherText);
 
+            $this->Users->patchEntity($user, [
+                'city_id' => $city->city_id,
+                'tz' => (int) $forecast->city->timezone->getName(),
+                'weather_updated_message_id' => $weatherUpdatedMessage->getMessageId(),
+                'forecast_message_id' => $dailyForecastMessage->getMessageId(),
+                'weather_message_id' => $currentWeatherMessage->getMessageId(),
+                'last_updated_forecast' => Time::now()->timestamp,
+                'last_updated_weather' => Time::now()->timestamp,
+            ]);
             $this->Users->saveOrFail($user);
 
         } catch (\Throwable $e) {

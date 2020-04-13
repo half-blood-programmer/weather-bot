@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\Http\ServerRequest;
 use Cake\ORM\Table;
+use Cake\Utility\Text;
 use Cake\Validation\Validator;
 
 /**
@@ -65,5 +67,21 @@ class CitiesTable extends Table
             ->notEmptyString('city_id');
 
         return $validator;
+    }
+
+    /**
+     * @param ServerRequest $request
+     * @return array|\Cake\Datasource\EntityInterface|null
+     */
+    public function getCity(ServerRequest $request)
+    {
+        return $this->find()->where([
+            'OR' => [
+                ['name' => $request->getData('message.text')],
+                ['name' => Text::transliterate($request->getData('message.text'))],
+                ['name' => Text::transliterate($request->getData('message.text'), 'Russian-Latin/BGN')]
+            ]
+        ])
+            ->first();
     }
 }

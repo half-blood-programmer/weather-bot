@@ -61,11 +61,19 @@ class CreateUsers extends AbstractMigration
             'default' => null,
             'null' => true,
         ]);
+        $table->addColumn('weather_updated_message_id', 'integer', [
+            'default' => null,
+            'null' => true,
+        ]);
         $table->addColumn('last_updated_weather', 'integer', [
             'default' => null,
             'null' => true,
         ]);
         $table->addColumn('last_updated_forecast', 'integer', [
+            'default' => null,
+            'null' => true,
+        ]);
+        $table->addColumn('tz', 'smallint', [
             'default' => null,
             'null' => true,
         ]);
