@@ -3,7 +3,6 @@ namespace App\Utility;
 
 use Cake\Cache\Cache;
 use Cake\I18n\Time;
-use Cake\Log\Log;
 use Cmfcmf\OpenWeatherMap;
 use Cmfcmf\OpenWeatherMap\WeatherForecast;
 use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
@@ -45,55 +44,82 @@ class Weather extends OpenWeatherMap
     }
 
     /**
-     * @param WeatherForecast $forecast
+     * Return km/h speed of wind
+     * example: '18 km/h'
+     *
+     * @param $speedInMetersPerSec
      * @return string
      */
-    public function getCurrentWeatherMessage(WeatherForecast $forecast)
+    protected function _getSpeedMessageInKmH(float $speedInMetersPerSec): string
     {
+        return (int)($speedInMetersPerSec * 3.6) . ' km/h';
+    }
 
-        $tzHours = (int) $forecast->city->timezone->getName();
-
-        $timeToday = Time::now()->addHours($tzHours)->format('d.m');
-
-        $i = 0;
-        $message = '';
-
-        foreach ($forecast as $weather) {
-
-            if ($i == 5) {
-                break;
-            }
-
-            if ($i == 0) {
-                $now = (int) $weather->temperature->now->getValue();
-            }
-
-            Log::debug(json_encode($weather));
-
-            $time = Time::createFromTimestamp($weather->time->from->getTimestamp())
-                ->addHours($tzHours)
-                ->format('d.m');
-
-            if ($time == $timeToday || $time == $todayPlus5days) {
-                continue;
-            }
-
-            $i++;
-        }
-
-        Log::debug(json_encode($weather->current()));
-        $speedInMetersPerSec = $weather->wind->speed->getValue();
-        $speedInKmPerHour = (int) ($speedInMetersPerSec * 3600 / 1000);
-        $wind = $speedInKmPerHour . ' km/h';
-
-        $min = (int) $weather->temperature->min->getValue();
-        $max = (int) $weather->temperature->max->getValue();
+    /**
+     * @param $now
+     * @param $min
+     * @param $max
+     * @param $wind
+     * @param $icon
+     * @return string
+     */
+    protected function _buildCurrentWeatherMessage(float $now, float $min, float $max, float $wind, string $icon)
+    {
+        $wind = $this->_getSpeedMessageInKmH($wind);
 
         $now = $now > 0 ? '+' . $now : $now;
         $min = $min > 0 ? '+' . $min : $min;
         $max = $max > 0 ? '+' . $max : $max;
 
-        return self::ICON[$weather->weather->icon] . " {$now}°    {$min}°/{$max}°        $wind";
+        return self::ICON[$icon] . " {$now}°    {$max}°/{$min}°        $wind";
+    }
+
+    /**
+     * @param $date
+     * @param $min
+     * @param $max
+     * @param $wind
+     * @param $icon
+     * @return string
+     */
+    protected function _buildDailyForecastMessage(Time $date, float $min, float $max, float $wind, string $icon)
+    {
+        $wind = $this->_getSpeedMessageInKmH($wind);
+        $date = $date->format('d.m');
+
+        $min = $min > 0 ? '+' . $min : $min;
+        $max = $max > 0 ? '+' . $max : $max;
+
+        return $date . ' ' . self::ICON[$icon] . "  {$max}°/{$min}°      $wind" . PHP_EOL;
+    }
+
+    /**
+     * @param WeatherForecast $forecast
+     * @return string
+     */
+    public function getCurrentWeatherMessage(WeatherForecast $forecast): string
+    {
+        $tempRange = [];
+
+        foreach ($forecast as $i => $weather) {
+
+            if ($i > 8) {
+                break;
+            }
+
+            if ($i == 0) {
+                $wind = $weather->wind->speed->getValue();
+                $icon = $weather->weather->icon;
+            }
+
+            $tempRange[] = (int) $weather->temperature->now->getValue();
+        }
+
+        $now = $tempRange[0];
+        $min = min($tempRange);
+        $max = max($tempRange);
+
+        return $this->_buildCurrentWeatherMessage($now, $min, $max, $wind, $icon);
     }
 
     /**
@@ -101,38 +127,54 @@ class Weather extends OpenWeatherMap
      * @return string
      * @throws OpenWeatherMap\Exception
      */
-    public function getDailyForecastMessage(WeatherForecast $forecast)
+    public function getDailyForecastMessage(WeatherForecast $forecast): string
     {
         $tzHours = (int) $forecast->city->timezone->getName();
 
-        $timeToday = Time::now()->addHours($tzHours)->format('d.m');
-        $todayPlus5days = Time::now()->addDays(5)->addHours($tzHours)->format('d.m');
+        $todayDate = Time::now()->addHours($tzHours);
+        $todayDatePlus5days = Time::now()->addDays(5)->addHours($tzHours);
 
-        Log::debug(json_encode($forecast));
-
-        $i = 0;
         $message = '';
 
+        $i = 0;
+        $icon = null;
+        $tempRange = [];
+        $windRange = [];
+
+        /**
+         * Day changes every 8th iteration
+         */
         foreach ($forecast as $weather) {
-            Log::debug(json_encode($weather));
 
-            $time = Time::createFromTimestamp($weather->time->from->getTimestamp())
-                ->addHours($tzHours)
-                ->format('d.m');
+            $date = Time::createFromTimestamp($weather->time->from->getTimestamp())->addHours($tzHours);
 
-            if ($time == $timeToday || $time == $todayPlus5days) {
+            if ($date->isSameDay($todayDate) || $date->isSameDay($todayDatePlus5days)) {
+                continue;
+            }
+
+            $tempRange[] = (int) $weather->temperature->now->getValue();
+            $windRange[] = (int) $weather->wind->speed->getValue();
+
+            if ($i == 5) {
+                $icon = $weather->weather->icon;
+            }
+
+            if ($i == 7) {
+
+                $min = min($tempRange);
+                $max = max($tempRange);
+                $wind = array_sum($windRange) / 8;
+
+                $message .= $this->_buildDailyForecastMessage($date, $min, $max, $wind, $icon);
+
+                $i = 0;
+                $tempRange = [];
+                $windRange = [];
+
                 continue;
             }
 
             $i++;
-
-            if ($i == 5) {
-                $message .= $time . ' ' .  $this->buildMessage($weather) . PHP_EOL;
-            }
-
-            if ($i == 8) {
-                $i = 0;
-            }
         }
 
         return $message;
@@ -148,7 +190,7 @@ class Weather extends OpenWeatherMap
             ->addHours((int) $weather->city->timezone->getName())
             ->format('d.m H:i');
 
-        return "Weather in {$weather->city->name} updated: $timeUpdated";
+        return "Weather in {$weather->city->name}: $timeUpdated";
     }
 
     /**
@@ -159,7 +201,7 @@ class Weather extends OpenWeatherMap
      * @return OpenWeatherMap\WeatherForecast|mixed
      * @throws OpenWeatherMap\Exception
      */
-    public function _getForecast($cityId, $languageCode = 'en')
+    public function getSimpleForecast($cityId, $languageCode = 'en')
     {
         $result = Cache::read($cityId, 'weatherData');
 

@@ -21,27 +21,32 @@ class WebhookController extends AppController
 {
 
     public $modelClass = 'Users';
+    public BotApi $bot;
 
     public function initialize(): void
     {
         parent::initialize();
 
         $this->loadModel('Cities');
+
+        $this->bot = new BotApi(Configure::read('Bot.api_key'));
+
+        if (true) {
+            $this->bot->setProxy('socks5://v3_279932456:yYvsvPT1@s5.priv.opennetwork.cc:1080');
+        }
     }
 
     /**
      * @throws \Throwable
      */
-    public function hook()
+    public function hook() : void
     {
         try {
-            $bot = new BotApi(Configure::read('Bot.api_key'));
-            $bot->setProxy('socks5://v3_279932456:yYvsvPT1@s5.priv.opennetwork.cc:1080');
 
             $user = $this->Users->getOrCreateUser($this->request);
 
             if ($this->request->getData('message.text') == '/start') {
-                $bot->sendMessage($this->request->getData('message.chat.id'), 'Hi, just send me your city');
+                $this->bot->sendMessage($this->request->getData('message.chat.id'), 'Hi, just send me your city');
 
                 return;
             }
@@ -49,22 +54,22 @@ class WebhookController extends AppController
             $city = $this->Cities->getCity($this->request);
 
             if (empty($city)) {
-                $bot->sendMessage($user->chat_id, 'City not found, try again');
+                $this->bot->sendMessage($user->chat_id, 'City not found, try again');
 
                 return;
             }
 
             $owm = new Weather(Configure::read('OpenWeather.api_key'));
-            $forecast = $owm->_getForecast($city->city_id, $user->language_code);
+            $forecast = $owm->getSimpleForecast($city->city_id, $user->language_code);
 
             $weatherUpdatedText = $owm->getWeatherUpdatedMessage($forecast);
-            $weatherUpdatedMessage = $bot->sendMessage($user->chat_id, $weatherUpdatedText);
+            $weatherUpdatedMessage = $this->bot->sendMessage($user->chat_id, $weatherUpdatedText);
 
             $dailyForecastText = $owm->getDailyForecastMessage($forecast);
-            $dailyForecastMessage = $bot->sendMessage($user->chat_id, $dailyForecastText);
+            $dailyForecastMessage = $this->bot->sendMessage($user->chat_id, $dailyForecastText);
 
             $currentWeatherText = $owm->getCurrentWeatherMessage($forecast);
-            $currentWeatherMessage = $bot->sendMessage($user->chat_id, $currentWeatherText);
+            $currentWeatherMessage = $this->bot->sendMessage($user->chat_id, $currentWeatherText);
 
             $this->Users->patchEntity($user, [
                 'city_id' => $city->city_id,
