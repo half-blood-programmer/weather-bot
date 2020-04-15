@@ -1,4 +1,3 @@
 #  m     h  dom    mon   dow   command
   */30  *     *     *     *    cd /var/www/cake3-app && /usr/bin/flock -n /tmp/updateWeather.lock bin/cake updateWeather --verbose >> /var/log/updateWeather.log
-  *     */3   *     *     *    cd /var/www/cake3-app && /usr/bin/flock -n /tmp/updateForecast.lock bin/cake updateForecast --verbose >> /var/log/updateForecast.log
 

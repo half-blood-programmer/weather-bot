@@ -90,12 +90,12 @@ class UsersTable extends Table
             ->allowEmptyString('city_id');
 
         $validator
-            ->integer('weather_message_id')
-            ->allowEmptyString('weather_message_id');
+            ->integer('daily_forecast_message_id')
+            ->allowEmptyString('daily_forecast_message_id');
 
         $validator
-            ->integer('forecast_message_id')
-            ->allowEmptyString('forecast_message_id');
+            ->integer('current_weather_message_id')
+            ->allowEmptyString('current_weather_message_id');
 
         $validator
             ->integer('weather_updated_message_id')
@@ -106,8 +106,7 @@ class UsersTable extends Table
             ->allowEmptyString('last_updated_weather');
 
         $validator
-            ->integer('last_updated_forecast')
-            ->allowEmptyString('last_updated_forecast');
+            ->allowEmptyString('tz');
 
         return $validator;
     }

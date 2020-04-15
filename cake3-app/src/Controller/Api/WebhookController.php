@@ -75,9 +75,8 @@ class WebhookController extends AppController
                 'city_id' => $city->city_id,
                 'tz' => (int) $forecast->city->timezone->getName(),
                 'weather_updated_message_id' => $weatherUpdatedMessage->getMessageId(),
-                'forecast_message_id' => $dailyForecastMessage->getMessageId(),
-                'weather_message_id' => $currentWeatherMessage->getMessageId(),
-                'last_updated_forecast' => Time::now()->timestamp,
+                'daily_forecast_message_id' => $dailyForecastMessage->getMessageId(),
+                'current_weather_message_id' => $currentWeatherMessage->getMessageId(),
                 'last_updated_weather' => Time::now()->timestamp,
             ]);
             $this->Users->saveOrFail($user);

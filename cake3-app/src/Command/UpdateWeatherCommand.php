@@ -22,6 +22,17 @@ use TelegramBot\Api\BotApi;
 class UpdateWeatherCommand extends Command
 {
     protected $modelClass = 'Users';
+    protected BotApi $bot;
+    protected Weather $owm;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->owm = new Weather(Configure::read('OpenWeather.api_key'));
+        $this->bot = new BotApi(Configure::read('Bot.api_key'));
+        $this->bot->setProxy('socks5://v3_279932456:yYvsvPT1@s5.priv.opennetwork.cc:1080');
+    }
 
     /**
      * Hook method for defining this command's option parser.
@@ -48,10 +59,6 @@ class UpdateWeatherCommand extends Command
      */
     public function execute(Arguments $args, ConsoleIo $io)
     {
-        $owm = new Weather(Configure::read('OpenWeather.api_key'));
-        $bot = new BotApi(Configure::read('Bot.api_key'));
-        $bot->setProxy('socks5://v3_279932456:yYvsvPT1@s5.priv.opennetwork.cc:1080');
-
         $users = $this->Users->find()->where([
             'available IS' => true,
             'city_id IS NOT' => null,
@@ -61,10 +68,16 @@ class UpdateWeatherCommand extends Command
         /** @var User $user */
         foreach ($users as $user) {
 
-            $message = $owm->getWeatherMessage($user->city_id, $user->language_code);
+            $forecast = $this->owm->getSimpleForecast($user->city_id, $user->language_code);
+
+            $weatherUpdatedText = $this->owm->getWeatherUpdatedMessage($forecast);
+            $dailyForecastText = $this->owm->getDailyForecastMessage($forecast);
+            $currentWeatherText = $this->owm->getCurrentWeatherMessage($forecast);
 
             try {
-                $bot->editMessageText($user->chat_id, $user->weather_message_id, $message);
+                $this->bot->editMessageText($user->chat_id, $user->weather_updated_message_id, $weatherUpdatedText);
+                $this->bot->editMessageText($user->chat_id, $user->daily_forecast_message_id, $dailyForecastText);
+                $this->bot->editMessageText($user->chat_id, $user->current_weather_message_id, $currentWeatherText);
             }
             catch (\Exception $e) {
                 continue;

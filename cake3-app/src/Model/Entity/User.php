@@ -18,11 +18,11 @@ use Cake\ORM\Entity;
  * @property int $user_id
  * @property int $chat_id
  * @property int|null $city_id
- * @property int|null $forecast_message_id
- * @property int|null $weather_message_id
- * @property int|null $last_updated_message_id
+ * @property int|null $daily_forecast_message_id
+ * @property int|null $current_weather_message_id
+ * @property int|null $weather_updated_message_id
  * @property int|null $last_updated_weather
- * @property int|null $last_updated_forecast
+ * @property int|null $tz
  */
 class User extends Entity
 {
@@ -45,10 +45,10 @@ class User extends Entity
         'user_id' => true,
         'chat_id' => true,
         'city_id' => true,
-        'forecast_message_id' => true,
-        'weather_message_id' => true,
+        'daily_forecast_message_id' => true,
+        'current_weather_message_id' => true,
         'weather_updated_message_id' => true,
         'last_updated_weather' => true,
-        'last_updated_forecast' => true,
+        'tz' => true,
     ];
 }

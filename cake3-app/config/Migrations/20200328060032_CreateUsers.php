@@ -53,11 +53,11 @@ class CreateUsers extends AbstractMigration
             'default' => null,
             'null' => true,
         ]);
-        $table->addColumn('forecast_message_id', 'integer', [
+        $table->addColumn('daily_forecast_message_id', 'integer', [
             'default' => null,
             'null' => true,
         ]);
-        $table->addColumn('weather_message_id', 'integer', [
+        $table->addColumn('current_weather_message_id', 'integer', [
             'default' => null,
             'null' => true,
         ]);
@@ -66,10 +66,6 @@ class CreateUsers extends AbstractMigration
             'null' => true,
         ]);
         $table->addColumn('last_updated_weather', 'integer', [
-            'default' => null,
-            'null' => true,
-        ]);
-        $table->addColumn('last_updated_forecast', 'integer', [
             'default' => null,
             'null' => true,
         ]);
