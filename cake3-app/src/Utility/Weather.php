@@ -67,9 +67,9 @@ class Weather extends OpenWeatherMap
     {
         $wind = $this->_getSpeedMessageInKmH($wind);
 
-        $now = $now > 0 ? '+' . $now : $now;
-        $min = $min > 0 ? '+' . $min : $min;
-        $max = $max > 0 ? '+' . $max : $max;
+        $now = $this->_formatTemperature($now);
+        $min = $this->_formatTemperature($min);
+        $max = $this->_formatTemperature($max);
 
         return self::ICON[$icon] . " {$now}°    {$max}°/{$min}°        $wind";
     }
@@ -87,10 +87,21 @@ class Weather extends OpenWeatherMap
         $wind = $this->_getSpeedMessageInKmH($wind);
         $date = $date->format('d.m');
 
-        $min = $min > 0 ? '+' . $min : $min;
-        $max = $max > 0 ? '+' . $max : $max;
+        $min = $this->_formatTemperature($min);
+        $max = $this->_formatTemperature($max);
 
-        return $date . ' ' . self::ICON[$icon] . "  {$max}°/{$min}°      $wind" . PHP_EOL;
+        return $date . ' ' . self::ICON[$icon] . "    {$max}°/{$min}°        $wind" . PHP_EOL;
+    }
+
+    /**
+     * Adds + to temp > 0 or adds space to 0 to prevent the message looking as telegram command
+     *
+     * @param $temperature
+     * @return string
+     */
+    protected function _formatTemperature($temperature): string
+    {
+        return $temperature == 0 ? ' ' . $temperature : ($temperature > 0 ? '+' . $temperature : $temperature);
     }
 
     /**
