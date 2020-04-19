@@ -59,10 +59,12 @@ class UpdateWeatherCommand extends Command
      */
     public function execute(Arguments $args, ConsoleIo $io)
     {
+        $lastUpdatedWeather = Time::now()->timestamp;
+
         $users = $this->Users->find()->where([
             'available IS' => true,
             'city_id IS NOT' => null,
-            'last_updated_weather <' => Time::now()->subMinutes(30)->timestamp
+            'last_updated_weather <=' => Time::now()->subMinutes(30)->timestamp
         ]);
 
         /** @var User $user */
@@ -70,20 +72,27 @@ class UpdateWeatherCommand extends Command
 
             $forecast = $this->owm->getSimpleForecast($user->city_id, $user->language_code);
 
-            $weatherUpdatedText = $this->owm->getWeatherUpdatedMessage($forecast);
             $dailyForecastText = $this->owm->getDailyForecastMessage($forecast);
             $currentWeatherText = $this->owm->getCurrentWeatherMessage($forecast);
 
             try {
-                $this->bot->editMessageText($user->chat_id, $user->weather_updated_message_id, $weatherUpdatedText);
                 $this->bot->editMessageText($user->chat_id, $user->daily_forecast_message_id, $dailyForecastText);
                 $this->bot->editMessageText($user->chat_id, $user->current_weather_message_id, $currentWeatherText);
             }
             catch (\Exception $e) {
+                /**
+                 * Message or whole chat has been deleted
+                 * Make user unavailable
+                 */
+                if ($e->getMessage() == 'Bad Request: message to edit not found') {
+                  $user->available = false;
+                  $this->Users->save($user);
+                }
+
                 continue;
             }
 
-            $user->last_updated_weather = Time::now()->timestamp;
+            $user->last_updated_weather = $lastUpdatedWeather;
             $this->Users->saveOrFail($user);
         }
     }

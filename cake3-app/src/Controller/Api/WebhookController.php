@@ -62,9 +62,6 @@ class WebhookController extends AppController
             $owm = new Weather(Configure::read('OpenWeather.api_key'));
             $forecast = $owm->getSimpleForecast($city->city_id, $user->language_code);
 
-            $weatherUpdatedText = $owm->getWeatherUpdatedMessage($forecast);
-            $weatherUpdatedMessage = $this->bot->sendMessage($user->chat_id, $weatherUpdatedText);
-
             $dailyForecastText = $owm->getDailyForecastMessage($forecast);
             $dailyForecastMessage = $this->bot->sendMessage($user->chat_id, $dailyForecastText);
 
@@ -74,7 +71,6 @@ class WebhookController extends AppController
             $this->Users->patchEntity($user, [
                 'city_id' => $city->city_id,
                 'tz' => (int) $forecast->city->timezone->getName(),
-                'weather_updated_message_id' => $weatherUpdatedMessage->getMessageId(),
                 'daily_forecast_message_id' => $dailyForecastMessage->getMessageId(),
                 'current_weather_message_id' => $currentWeatherMessage->getMessageId(),
                 'last_updated_weather' => Time::now()->timestamp,

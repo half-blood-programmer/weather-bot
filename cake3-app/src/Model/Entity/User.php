@@ -20,7 +20,6 @@ use Cake\ORM\Entity;
  * @property int|null $city_id
  * @property int|null $daily_forecast_message_id
  * @property int|null $current_weather_message_id
- * @property int|null $weather_updated_message_id
  * @property int|null $last_updated_weather
  * @property int|null $tz
  */
@@ -47,7 +46,6 @@ class User extends Entity
         'city_id' => true,
         'daily_forecast_message_id' => true,
         'current_weather_message_id' => true,
-        'weather_updated_message_id' => true,
         'last_updated_weather' => true,
         'tz' => true,
     ];

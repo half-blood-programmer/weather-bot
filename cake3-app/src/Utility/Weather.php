@@ -56,14 +56,14 @@ class Weather extends OpenWeatherMap
     }
 
     /**
-     * @param $now
-     * @param $min
-     * @param $max
-     * @param $wind
-     * @param $icon
+     * @param float $now
+     * @param float $min
+     * @param float $max
+     * @param float $wind
+     * @param string $icon
      * @return string
      */
-    protected function _buildCurrentWeatherMessage(float $now, float $min, float $max, float $wind, string $icon)
+    protected function _buildCurrentWeatherMessage(float $now, float $min, float $max, float $wind, string $icon): string
     {
         $wind = $this->_getSpeedMessageInKmH($wind);
 
@@ -71,7 +71,7 @@ class Weather extends OpenWeatherMap
         $min = $this->_formatTemperature($min);
         $max = $this->_formatTemperature($max);
 
-        return self::ICON[$icon] . " {$now}°    {$max}°/{$min}°        $wind";
+        return self::ICON[$icon] . " {$now}°    {$max}°/{$min}°    $wind";
     }
 
     /**
@@ -85,12 +85,12 @@ class Weather extends OpenWeatherMap
     protected function _buildDailyForecastMessage(Time $date, float $min, float $max, float $wind, string $icon)
     {
         $wind = $this->_getSpeedMessageInKmH($wind);
-        $date = $date->format('d.m');
+        $date = $date->format('d/m');
 
         $min = $this->_formatTemperature($min);
         $max = $this->_formatTemperature($max);
 
-        return $date . ' ' . self::ICON[$icon] . "    {$max}°/{$min}°        $wind" . PHP_EOL;
+        return $date . '   ' . self::ICON[$icon] . "   {$max}°/{$min}°        $wind" . PHP_EOL;
     }
 
     /**
@@ -145,7 +145,7 @@ class Weather extends OpenWeatherMap
         $todayDate = Time::now()->addHours($tzHours);
         $todayDatePlus5days = Time::now()->addDays(5)->addHours($tzHours);
 
-        $message = '';
+        $message = $todayDate->format('d/m  H:i  ') . $forecast->city->name . PHP_EOL . PHP_EOL;
 
         $i = 0;
         $icon = null;
@@ -189,19 +189,6 @@ class Weather extends OpenWeatherMap
         }
 
         return $message;
-    }
-
-    /**
-     * @param OpenWeatherMap\WeatherForecast $weather
-     * @return string
-     */
-    public function getWeatherUpdatedMessage(WeatherForecast $weather)
-    {
-        $timeUpdated = Time::now()
-            ->addHours((int) $weather->city->timezone->getName())
-            ->format('d.m H:i');
-
-        return "Weather in {$weather->city->name}: $timeUpdated";
     }
 
     /**

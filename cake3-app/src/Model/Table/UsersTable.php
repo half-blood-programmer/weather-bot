@@ -98,10 +98,6 @@ class UsersTable extends Table
             ->allowEmptyString('current_weather_message_id');
 
         $validator
-            ->integer('weather_updated_message_id')
-            ->allowEmptyString('weather_updated_message_id');
-
-        $validator
             ->integer('last_updated_weather')
             ->allowEmptyString('last_updated_weather');
 
@@ -146,6 +142,12 @@ class UsersTable extends Table
                 'user_id' => $request->getData('message.from.id'),
                 'chat_id' => $request->getData('message.chat.id'),
             ]);
+
+            return $this->saveOrFail($user);
+        }
+
+        if (!$user->available) {
+            $user->available = true;
             $this->saveOrFail($user);
         }
 
