@@ -6,9 +6,7 @@ services:
     image: postgres:12.2
 
     restart: always
-    environment:
-      POSTGRES_DB: app
-      POSTGRES_PASSWORD: password
+    env_file: cake3-app/config/.env
 
     volumes:
       - ../workspace/postgres:/var/lib/postgresql/data
@@ -22,7 +20,7 @@ services:
       dockerfile: assets/docker/php/Dockerfile
 
     ports:
-      - 14080:80
+      - 80:80
 
     links:
       - postgres

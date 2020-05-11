@@ -411,10 +411,10 @@ return [
      */
     'Bot' => [
         'username' => 'weather_is_bot',
-        'api_key' => '1130216149:AAFjSESTlALmJZbd4tHM4jOrJoxxxh-6-jU',
-        'hook_url' => 'https://8af0b879.ngrok.io/api/webhook/hook.json'
+        'api_key' => env('TELEGRAM_WEATHER_BOT_API_KEY', false),
+        'hook_url' => env('TELEGRAM_WEATHER_BOT_WEBHOOK_URL', false)
     ],
     'OpenWeather' => [
-        'api_key' => '61c25599612581cc5252751ab0fc4313'
+        'api_key' => env('OPEN_WEATHER_API_KEY', false)
     ]
 ];
