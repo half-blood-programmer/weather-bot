@@ -71,7 +71,8 @@ class Weather extends OpenWeatherMap
         $min = $this->_formatTemperature($min);
         $max = $this->_formatTemperature($max);
 
-        return self::ICON[$icon] . " {$now}°    {$max}°/{$min}°    $wind";
+        $title = __('Now') . ' (' . __('Updated at') . ' ' . Time::now()->format('H:i') . '):';
+        return $title . PHP_EOL . self::ICON[$icon] . " {$now}°    {$max}°/{$min}°    $wind";
     }
 
     /**
@@ -85,7 +86,7 @@ class Weather extends OpenWeatherMap
     protected function _buildDailyForecastMessage(Time $date, float $min, float $max, float $wind, string $icon)
     {
         $wind = $this->_getSpeedMessageInKmH($wind);
-        $date = $date->format('d/m');
+        $date = $date->format('d.m');
 
         $min = $this->_formatTemperature($min);
         $max = $this->_formatTemperature($max);
@@ -145,7 +146,7 @@ class Weather extends OpenWeatherMap
         $todayDate = Time::now()->addHours($tzHours);
         $todayDatePlus5days = Time::now()->addDays(5)->addHours($tzHours);
 
-        $message = $todayDate->format('d/m  H:i  ') . $forecast->city->name . PHP_EOL . PHP_EOL;
+        $message = $todayDate->format('d.m  H:i  ') . $forecast->city->name . PHP_EOL . PHP_EOL;
 
         $i = 0;
         $icon = null;

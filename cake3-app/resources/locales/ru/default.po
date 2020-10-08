@@ -1,0 +1,11 @@
+msgid "'Hi, just send me your city'"
+msgstr "Привет, просто отправь название своего города"
+
+msgid "City not found, try again"
+msgstr "Город не найден, попробуйте снова"
+
+msgid "Now"
+msgstr "Сейчас"
+
+msgid "Updated at"
+msgstr "Обновлено в"

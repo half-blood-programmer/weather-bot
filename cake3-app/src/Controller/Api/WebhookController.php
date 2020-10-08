@@ -6,6 +6,7 @@ namespace App\Controller\Api;
 use App\Model\Entity\User;
 use App\Utility\Weather;
 use Cake\Core\Configure;
+use Cake\I18n\I18n;
 use Cake\I18n\Time;
 use TelegramBot\Api\BotApi;
 
@@ -30,10 +31,6 @@ class WebhookController extends AppController
         $this->loadModel('Cities');
 
         $this->bot = new BotApi(Configure::read('Bot.api_key'));
-
-        if (true) {
-            $this->bot->setProxy('socks5://v3_279932456:yYvsvPT1@s5.priv.opennetwork.cc:1080');
-        }
     }
 
     /**
@@ -44,9 +41,10 @@ class WebhookController extends AppController
         try {
 
             $user = $this->Users->getOrCreateUser($this->request);
+            I18n::setLocale($user->language_code);
 
             if ($this->request->getData('message.text') == '/start') {
-                $this->bot->sendMessage($this->request->getData('message.chat.id'), 'Hi, just send me your city');
+                $this->bot->sendMessage($this->request->getData('message.chat.id'), __('Hi, just send me your city'));
 
                 return;
             }
@@ -54,7 +52,7 @@ class WebhookController extends AppController
             $city = $this->Cities->getCity($this->request);
 
             if (empty($city)) {
-                $this->bot->sendMessage($user->chat_id, 'City not found, try again');
+                $this->bot->sendMessage($user->chat_id, __('City not found, try again'));
 
                 return;
             }
